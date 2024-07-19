@@ -1,0 +1,11 @@
+node_modules
+.env
+.env.local
+db2-client
+bull/db2-client
+dist
+pdf/
+signature
+photo
+docker
+tes_file

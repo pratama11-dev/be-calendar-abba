@@ -1,0 +1,28 @@
+# Use root/example as user/password credentials
+version: "3.1"
+
+services:
+  backend:
+    build: "./"
+    image: ppic-pil:latest
+    container_name: api-ppic
+    hostname: apippic
+    command: sh -c "env | grep -E '^[A-Za-z_]+=' > .env && git checkout main && git pull && npm i && npm run build && cp -r ./templates /app/dist/templates && npm run start"
+    volumes:
+      - "./photo:/app/photo"
+      - "./pdf:/app/pdf"
+      - "./signature:/app/signature"
+    ports:
+      - target: 9334
+        published: 9334
+        protocol: tcp
+    env_file:
+      - ./.env
+    restart: always
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./redis/redis.conf:/usr/local/etc/redis/redis.conf"
+    command: redis-server /usr/local/etc/redis/redis.conf

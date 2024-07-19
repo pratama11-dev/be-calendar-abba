@@ -1,0 +1,25 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+  binaryTargets   = ["native", "windows"]
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+  schemas  = ["calendar", "user"]
+}
+
+model user {
+  id         Int      @id() @default(autoincrement())
+  name       String?  
+  email      String?  @unique(map: "UQ__user__AB6E61649A5D8E7D")
+  password   String?
+  id_status  Int?
+  created_at DateTime?
+  updated_at DateTime?
+  last_login DateTime?
+  last_logout DateTime?
+
+  @@schema("user")
+}
