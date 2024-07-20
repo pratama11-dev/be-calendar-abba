@@ -7,20 +7,16 @@ dotenv.config();
 import * as swaggerDocument from "../swagger-output.json";
 import publicRoutes from "./Routes/publicRoutes";
 import protectedRoutes from "./Routes/protectedRoutes";
-import openRoutes from './Routes/openRoutes'
 import bodyParser from "body-parser";
 import { PrismaClient } from "@prisma/client";
 import cors from "cors";
 import passport from "passport";
 import { jwtStrategy } from "./passport";
 import * as path from "path";
-import { initWsAndSocketIO } from "./Utils/socketInit";
 import { createBullBoard } from "@bull-board/api";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { ExpressAdapter } from "@bull-board/express";
 import { SAPQueue } from "./Utils/queue";
-import rndRoutes from "./Routes/rndRoutes";
-import priceRoutes from "./Routes/priceRoutes";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -58,14 +54,7 @@ app.set("views", path.join(__dirname, "html"));
 // Routes
 app.use("/public", publicRoutes);
 app.use("/api", protectedRoutes);
-app.use("/op", openRoutes);
-app.use("/api/rnd", rndRoutes);
-app.use("/api/price", priceRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use("/images", express.static("images"));
-app.use("/pdf", express.static("pdf"));
-app.use("/signature", express.static("signature"));
-app.use("/photo", express.static("photo"));
 
 // Routes for Experimenting stuff
 app.get("/", async (req: Request, res: Response) => {
@@ -119,7 +108,6 @@ const subscriptions = new Map();
 //   }
 // });
 
-initWsAndSocketIO(wss, subscriptions, prisma);
 
 // test if you set all socket server correctly
 app.get("/socket", (req, res) => {

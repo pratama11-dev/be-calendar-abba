@@ -6,7 +6,7 @@ export const jwtStrategy = (req: Request) => new JwtStrategy({
   secretOrKey: process.env.APP_SECRET,
 }, async (jwtPayload, done) => {
   try {
-    const user = await req.prisma.sso_users.findFirst({ where: { id: jwtPayload.id } });
+    const user = await req.prisma.user.findFirst({ where: { id: jwtPayload.id } });
     return done(null, user || false);
   } catch (err) {
     return done(err, false);

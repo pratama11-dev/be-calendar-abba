@@ -10,16 +10,36 @@ datasource db {
   schemas  = ["calendar", "user"]
 }
 
+model event {
+  id          Int         @id() @default(autoincrement())
+  title       String?
+  start_event DateTime?
+  end_event   DateTime?
+  user_event  user_event[]
+
+  @@index([id])
+  @@schema("calendar")
+}
+
+model user_event {
+  user_id  Int
+  event_id Int
+  user    user  @relation(fields: [user_id], references: [id])
+  event   event @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([user_id, event_id])
+  @@index([user_id])
+  @@index([event_id])
+  @@schema("user")
+}
+
 model user {
-  id         Int      @id() @default(autoincrement())
-  name       String?  
-  email      String?  @unique(map: "UQ__user__AB6E61649A5D8E7D")
-  password   String?
-  id_status  Int?
-  created_at DateTime?
-  updated_at DateTime?
-  last_login DateTime?
-  last_logout DateTime?
+  id          Int         @id() @default(autoincrement())
+  name        String?
+  email       String?     @unique(map: "UQ__user__AB6E61649A5D8E7D")
+  created_at  DateTime?
+  updated_at  DateTime?
+  user_event   user_event[]
 
   @@schema("user")
 }
