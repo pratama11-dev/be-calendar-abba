@@ -18,6 +18,15 @@ export class ZodSchema {
     date_end: z.string()
   })
 
+  static ZEditDataCalendar = z.object({
+    id: z.number(),
+    title: z.string(),
+    user: z.array(
+      z.string()
+    ).nullable().optional(),
+    date_start: z.string(),
+    date_end: z.string()
+  })
  
   static convertZodToJsonSchema(schema: any, schemaName: string) {
     const jsonSchema = zodToJsonSchema(schema, schemaName);

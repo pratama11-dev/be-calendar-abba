@@ -6,11 +6,12 @@ import { z } from 'zod';
 
 export const listEvent = async (req: Request, res: Response) => {
     try {
-        const { users } = z
+        const { users, search } = z
             .object({
                 users: z.array(
                     z.string()
                 ).nullable().optional(),
+                search: z.string().nullable().optional(),
             })
             .parse(req.body);
 
@@ -28,6 +29,11 @@ export const listEvent = async (req: Request, res: Response) => {
                                             }
                                         }
                                     }
+                                }
+                            } : undefined,
+                            search ? {
+                                title: {
+                                    contains: search
                                 }
                             } : undefined
                         ]
@@ -62,6 +68,42 @@ export const listEvent = async (req: Request, res: Response) => {
 export const addEvent = async (req: Request, res: Response) => {
     try {
         const input = ZodSchema.ZAddDataCalendar.parse(req.body);
+
+        // check, already event on it or not?
+        const overlappingEvent = await req.prisma.event.findFirst({
+            where: {
+                OR: [
+                    {
+                        start_event: {
+                            lte: input.date_end,
+                        },
+                        end_event: {
+                            gte: input.date_start,
+                        }
+                    },
+                    {
+                        start_event: {
+                            lte: input.date_start,
+                        },
+                        end_event: {
+                            gte: input.date_start,
+                        }
+                    },
+                    {
+                        start_event: {
+                            lte: input.date_end,
+                        },
+                        end_event: {
+                            gte: input.date_end,
+                        }
+                    }
+                ]
+            }
+        });
+
+        if (overlappingEvent) {
+            throw new Error("Already Event on it");
+        }
 
         const event = await req.prisma.event.create({
             data: {
@@ -106,6 +148,29 @@ export const addEvent = async (req: Request, res: Response) => {
     }
 }
 
+export const editEvent = async (req: Request, res: Response) => {
+    try {
+        const input = ZodSchema.ZEditDataCalendar.parse(req.body);
+        
+        const event = await req.prisma.event.update({
+            where: {
+                id: input?.id
+            },
+            data: {
+                title: input?.title,
+                start_event: input?.date_start,
+                end_event: input?.date_end
+            }
+        })
+
+        return res.status(200).json({
+            data: { event }
+        })
+    } catch (error) {
+        return defaultErrorHandling(res, error);
+    }
+}
+
 export const detailEvent = async (req: Request, res: Response) => {
     try {
         const { id } = z
@@ -127,6 +192,11 @@ export const detailEvent = async (req: Request, res: Response) => {
                 }
             }
         })
+
+        // @ts-ignore
+        data?.start = data?.start_event
+        // @ts-ignore
+        data?.end = data?.end_event
 
         return res.status(200).json({
             data: data
